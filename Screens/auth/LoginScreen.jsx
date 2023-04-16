@@ -19,7 +19,7 @@ const initialState = {
   password: "",
 };
 
-export default function LoginScreen() {
+export default function LoginScreen({ navigation }) {
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [state, setState] = useState(initialState);
   const [isPasswordSecure, setIsPasswordSecure] = useState(true);
@@ -102,7 +102,7 @@ export default function LoginScreen() {
                 <Text style={styles.btnText}>Увійти</Text>
               </TouchableOpacity>
               <TouchableOpacity
-              // onPress={() => navigation.navigate('Login')}
+                onPress={() => navigation.navigate("Registration")}
               >
                 <Text style={styles.login}>
                   Немає аккаунту? Зареєструватися

@@ -20,7 +20,7 @@ const initialState = {
   password: "",
 };
 
-export default function RegistrationScreen() {
+export default function RegistrationScreen({ navigation }) {
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [state, setState] = useState(initialState);
   const [isPasswordSecure, setIsPasswordSecure] = useState(true);
@@ -112,9 +112,7 @@ export default function RegistrationScreen() {
               <TouchableOpacity style={styles.btn} onPress={registration}>
                 <Text style={styles.btnText}>Зареєструватися</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-              // onPress={() => navigation.navigate('Login')}
-              >
+              <TouchableOpacity onPress={() => navigation.navigate("Login")}>
                 <Text style={styles.login}>Вже є аккаунт? Увійти</Text>
               </TouchableOpacity>
             </KeyboardAvoidingView>
