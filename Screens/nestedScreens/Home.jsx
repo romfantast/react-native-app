@@ -7,7 +7,7 @@ import {
   Image,
   TouchableOpacity,
 } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
+
 import { Feather } from '@expo/vector-icons'
 
 export default function Home({ route, navigation }) {
@@ -45,15 +45,19 @@ export default function Home({ route, navigation }) {
                 <Feather name="message-circle" size={24} color="#BDBDBD" />
                 <Text style={styles.commentsCount}>0</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() =>
-                  navigation.navigate('Map', {
-                    location: item.location,
-                  })
-                }
-              >
-                <Ionicons name="location-outline" size={24} color="#BDBDBD" />
-              </TouchableOpacity>
+              <View>
+                <TouchableOpacity
+                  style={{ display: 'flex', flexDirection: 'row' }}
+                  onPress={() =>
+                    navigation.navigate('Map', {
+                      location: item.location,
+                    })
+                  }
+                >
+                  <Feather name="map-pin" size={24} color="#BDBDBD" />
+                  <Text style={styles.place}>{item.place.value}</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </>
         )}
@@ -99,5 +103,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 19,
     color: '#BDBDBD',
+  },
+  place: {
+    fontFamily: 'Roboto-Regular',
+    fontSize: 16,
+    lineHeight: 19,
+    textAlign: 'right',
+    textDecorationLine: 'underline',
+
+    color: '#212121',
   },
 })
