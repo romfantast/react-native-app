@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useSelector } from 'react-redux'
 import {
   Text,
   View,
@@ -10,10 +11,13 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native'
+
 import { Camera, CameraType } from 'expo-camera'
 import { FontAwesome } from '@expo/vector-icons'
 import { Feather } from '@expo/vector-icons'
 import * as Location from 'expo-location'
+import db from '../../firebase/config'
+import { nanoid } from 'nanoid'
 
 export default function CreatePostsScreen({ navigation }) {
   const [isShowKeyboard, setIsShowKeyboard] = useState(false)
@@ -22,43 +26,62 @@ export default function CreatePostsScreen({ navigation }) {
   const [title, setTitle] = useState('')
   const [location, setLocation] = useState(null)
   const [place, setPlace] = useState('')
-  const [errorMsg, setErrorMsg] = useState(null)
 
-  // const getLocation = async () => {
-  //     let { status } = await Location.requestForegroundPermissionsAsync()
-  //     if (status !== 'granted') {
-  //       setErrorMsg('Permission to access location was denied')
-  //       return
-  //     }
+  const { userId, login } = useSelector((state) => state.auth)
 
-  //     let location = await Location.getCurrentPositionAsync({})
-  //     setLocation(location)
-  //     console.log('location', location)
-  //   }
+  useEffect(() => {
+    ;(async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync()
+
+      if (status !== 'granted') {
+        console.log('Permission to access location was denied')
+        return
+      }
+      let locationRes = await Location.getCurrentPositionAsync({})
+      setLocation(locationRes)
+    })()
+  }, [])
 
   const takePhoto = async () => {
-    // const { status } = await Camera.requestCameraPermissionsAsync()
-    const photo = await camera.takePictureAsync()
-    setPhoto(photo.uri)
+    const { uri } = await camera.takePictureAsync()
+    setPhoto(uri)
   }
 
   const sendData = () => {
-    const getLocation = async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync()
-      if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied')
-        return
-      }
+    uploadPostToServer()
+    navigation.navigate('Home')
+    setPhoto('')
+    setTitle('')
+    setPlace('')
+  }
 
-      let location = await Location.getCurrentPositionAsync({})
-      setLocation(location)
-      console.log('location', location)
-    }
+  const uploadPostToServer = async () => {
+    const photo = await uploadPhotoToServer()
+    const createPost = await db.firestore().collection('posts').add({
+      photo,
+      title,
+      location: location.coords,
+      place,
+      userId,
+      login,
+    })
+  }
 
-    getLocation()
+  const uploadPhotoToServer = async () => {
+    const response = await fetch(photo)
+    const file = await response.blob()
 
-    console.log('navigation', navigation)
-    navigation.navigate('Home', { photo, title, location, place })
+    const uniquePostId = nanoid()
+
+    await db.storage().ref(`postImage/${uniquePostId}`).put(file)
+
+    const processedPhoto = await db
+      .storage()
+      .ref('postImage')
+      .child(uniquePostId)
+      .getDownloadURL()
+
+    return processedPhoto
   }
 
   const keyboardHide = () => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Text,
   View,
@@ -8,16 +8,65 @@ import {
   TextInput,
   TouchableOpacity,
   Dimensions,
+  FlatList,
+  SafeAreaView,
 } from 'react-native'
+import { useSelector } from 'react-redux'
+import db from '../../firebase/config'
 import { AntDesign } from '@expo/vector-icons'
 
 export default function CommentsScreen({ route }) {
   const [comment, setComment] = useState('')
+  const [allComments, setAllComments] = useState([])
+  const { postId } = route.params
+  const { photo } = useSelector((state) => state.auth)
+
+  useEffect(() => {
+    getAllComments()
+  }, [])
+
+  const createComment = async () => {
+    db.firestore()
+      .collection('posts')
+      .doc(postId)
+      .collection('comments')
+      .add({ comment, photo })
+
+    setComment('')
+  }
+
+  const getAllComments = async () => {
+    db.firestore()
+      .collection('posts')
+      .doc(postId)
+      .collection('comments')
+      .onSnapshot((data) =>
+        setAllComments(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })))
+      )
+  }
+
   return (
     <View style={styles.container}>
       <View style={{ marginTop: 32 }}>
         <Image source={{ uri: route.params.photo }} style={styles.img} />
       </View>
+
+      <SafeAreaView>
+        <FlatList
+          style={styles.list}
+          data={allComments}
+          renderItem={({ item }) => (
+            <View style={styles.boxComment}>
+              <Image source={{ uri: item.photo }} style={styles.avatar} />
+              <View style={styles.boxText}>
+                <Text style={styles.textComment}>{item.comment}</Text>
+                <Text style={styles.dateComment}></Text>
+              </View>
+            </View>
+          )}
+          keyExtractor={(item) => item.id}
+        />
+      </SafeAreaView>
 
       <KeyboardAvoidingView
         behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
@@ -31,12 +80,7 @@ export default function CommentsScreen({ route }) {
             placeholderTextColor="#BDBDBD"
           />
 
-          <TouchableOpacity
-            onPress={() => {
-              setComment('')
-            }}
-            style={styles.btn}
-          >
+          <TouchableOpacity onPress={createComment} style={styles.btn}>
             <AntDesign name="arrowup" size={24} color="#fff" />
           </TouchableOpacity>
         </View>
@@ -76,5 +120,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: '50%',
+  },
+  list: {
+    marginBottom: 32,
+  },
+  boxComment: {
+    display: 'flex',
+    flexDirection: 'row',
+    marginHorizontal: 16,
+    marginTop: 24,
+  },
+  avatar: {
+    marginRight: 16,
+    width: 28,
+    height: 28,
+    borderRadius: '50%',
+  },
+  boxText: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.03)',
+    width: 299,
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 6,
+    borderBottomLeftRadius: 6,
+    borderBottomRightRadius: 6,
+  },
+  textComment: {
+    fontFamily: 'Roboto-Regular',
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#212121',
   },
 })

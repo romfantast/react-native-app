@@ -16,11 +16,15 @@ import {
   Image,
 } from 'react-native'
 import { Camera, CameraType } from 'expo-camera'
+import { useDispatch } from 'react-redux'
+
+import { authSignUpUser } from '../../redux/auth/authOperations'
 
 const initialState = {
-  login: '',
-  email: '',
+  mail: '',
   password: '',
+  login: '',
+  photo: '',
 }
 
 export default function RegistrationScreen({ navigation }) {
@@ -28,18 +32,19 @@ export default function RegistrationScreen({ navigation }) {
   const [state, setState] = useState(initialState)
   const [isPasswordSecure, setIsPasswordSecure] = useState(true)
   const [camera, setCamera] = useState(null)
-  const [photo, setPhoto] = useState('')
+
+  const dispatch = useDispatch()
 
   const takePhoto = async () => {
     const { status } = await Camera.requestCameraPermissionsAsync()
     const photo = await camera.takePictureAsync()
-    setPhoto(photo.uri)
+    setState((prev) => ({ ...prev, photo: photo.uri }))
   }
 
   const registration = () => {
     setIsShowKeyboard(false)
     Keyboard.dismiss()
-    console.log('state', state)
+    dispatch(authSignUpUser(state))
     setState(initialState)
   }
 
@@ -60,10 +65,11 @@ export default function RegistrationScreen({ navigation }) {
               ...Platform.select({
                 ios: {
                   ...styles.form,
-                  marginBottom: isShowKeyboard ? 140 : 0,
+                  marginBottom: isShowKeyboard ? 180 : 0,
                 },
                 android: {
                   ...styles.form,
+                  paddingBottom: isShowKeyboard ? 0 : 78,
                 },
               }),
             }}
@@ -73,18 +79,18 @@ export default function RegistrationScreen({ navigation }) {
               ref={setCamera}
               type={CameraType.front}
             >
-              {photo && (
+              {state.photo && (
                 <>
                   <View style={styles.takePhotoContainer}>
-                    <Image source={{ uri: photo }} style={styles.photo} />
+                    <Image source={{ uri: state.photo }} style={styles.photo} />
                   </View>
                 </>
               )}
             </Camera>
-            {photo && (
+            {state.photo && (
               <TouchableOpacity
                 onPress={() => {
-                  setPhoto('')
+                  setState((prev) => ({ ...prev, photo: '' }))
                 }}
                 style={{
                   position: 'absolute',
@@ -103,7 +109,7 @@ export default function RegistrationScreen({ navigation }) {
                 <AntDesign name="close" size={20} color="#BDBDBD" />
               </TouchableOpacity>
             )}
-            {!photo && (
+            {!state.photo && (
               <TouchableOpacity
                 style={{
                   position: 'absolute',
@@ -116,7 +122,7 @@ export default function RegistrationScreen({ navigation }) {
               </TouchableOpacity>
             )}
             <KeyboardAvoidingView
-              behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
+              behavior={Platform.OS == 'ios' ? 'padding' : ''}
             >
               <Text style={styles.title}>Реєстрація</Text>
               <TextInput
@@ -131,14 +137,14 @@ export default function RegistrationScreen({ navigation }) {
                 }}
               />
               <TextInput
-                value={state.email}
+                value={state.mail}
                 style={styles.input}
                 placeholder="Адреса електронної пошти"
                 onFocus={() => {
                   setIsShowKeyboard(true)
                 }}
                 onChangeText={(value) => {
-                  setState((prev) => ({ ...prev, email: value }))
+                  setState((prev) => ({ ...prev, mail: value }))
                 }}
               />
               <View style={{ position: 'relative' }}>
@@ -167,13 +173,14 @@ export default function RegistrationScreen({ navigation }) {
               <TouchableOpacity style={styles.btn} onPress={registration}>
                 <Text style={styles.btnText}>Зареєструватися</Text>
               </TouchableOpacity>
+
               <TouchableOpacity onPress={() => navigation.navigate('Login')}>
                 <Text style={styles.login}>Вже є аккаунт? Увійти</Text>
               </TouchableOpacity>
             </KeyboardAvoidingView>
           </View>
         </ImageBackground>
-        <StatusBar style="auto" />
+        {/* <StatusBar style="auto" /> */}
       </View>
     </TouchableWithoutFeedback>
   )

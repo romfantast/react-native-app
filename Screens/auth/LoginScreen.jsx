@@ -1,6 +1,4 @@
 import React, { useState } from 'react'
-
-import { StatusBar } from 'expo-status-bar'
 import {
   StyleSheet,
   Text,
@@ -13,6 +11,9 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
 } from 'react-native'
+import { StatusBar } from 'expo-status-bar'
+import { useDispatch } from 'react-redux'
+import { authSignInUser } from '../../redux/auth/authOperations'
 
 const initialState = {
   email: '',
@@ -24,10 +25,12 @@ export default function LoginScreen({ navigation }) {
   const [state, setState] = useState(initialState)
   const [isPasswordSecure, setIsPasswordSecure] = useState(true)
 
+  const dispatch = useDispatch()
+
   const login = () => {
     setIsShowKeyboard(false)
     Keyboard.dismiss()
-    console.log('state', state)
+    dispatch(authSignInUser(state))
     setState(initialState)
   }
 
@@ -48,16 +51,17 @@ export default function LoginScreen({ navigation }) {
               ...Platform.select({
                 ios: {
                   ...styles.form,
-                  marginBottom: isShowKeyboard ? 140 : 0,
+                  marginBottom: isShowKeyboard ? 180 : 0,
                 },
                 android: {
                   ...styles.form,
+                  paddingBottom: isShowKeyboard ? 0 : 140,
                 },
               }),
             }}
           >
             <KeyboardAvoidingView
-              behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
+              behavior={Platform.OS == 'ios' ? 'padding' : ''}
             >
               <Text style={styles.title}>Вхід</Text>
 
@@ -108,7 +112,7 @@ export default function LoginScreen({ navigation }) {
             </KeyboardAvoidingView>
           </View>
         </ImageBackground>
-        <StatusBar style="auto" />
+        {/* <StatusBar style="auto" /> */}
       </View>
     </TouchableWithoutFeedback>
   )
@@ -130,12 +134,9 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 25,
     paddingTop: 32,
     paddingBottom: 144,
-    // height: 549,
   },
   title: {
     marginBottom: 16,
-    // marginTop: 92,
-
     fontFamily: 'Roboto-Medium',
     fontSize: 30,
     lineHeight: 35,
