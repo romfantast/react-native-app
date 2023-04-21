@@ -1,56 +1,56 @@
-import db from '../../firebase/config'
-import { authSlice } from './authReducer'
+import db from "../../firebase/config";
+import { authSlice } from "./authReducer";
 
-const { updateUserProfile, authSignOut, authStateChange } = authSlice.actions
+const { updateUserProfile, authSignOut, authStateChange } = authSlice.actions;
 
 export const authSignUpUser =
-  ({ login, mail, password, photo }) =>
+  ({ login, mail, password, photo = "" }) =>
   async (dispatch, getState) => {
     try {
-      await db.auth().createUserWithEmailAndPassword(mail, password)
+      await db.auth().createUserWithEmailAndPassword(mail, password);
 
-      const user = await db.auth().currentUser
+      const user = await db.auth().currentUser;
 
       await user.updateProfile({
         displayName: login,
         email: mail,
         photoURL: photo,
-      })
+      });
 
-      const { displayName, uid, email, photoURL } = await db.auth().currentUser
+      const { displayName, uid, email, photoURL } = await db.auth().currentUser;
 
       const userUpdateProfile = {
         login: displayName,
         userId: uid,
         email: email,
         photo: photoURL,
-      }
+      };
 
-      dispatch(updateUserProfile(userUpdateProfile))
+      dispatch(updateUserProfile(userUpdateProfile));
     } catch (err) {
-      console.log('err', err.message)
+      console.log("err", err.message);
     }
-  }
+  };
 
 export const authSignInUser =
   ({ email, password }) =>
   async (dispatch, getState) => {
     try {
-      const user = await db.auth().signInWithEmailAndPassword(email, password)
+      const user = await db.auth().signInWithEmailAndPassword(email, password);
     } catch (err) {
-      console.log('err', err.message)
+      console.log("err", err.message);
     }
-  }
+  };
 
 export const authSignOutUser = () => async (dispatch, getState) => {
   try {
-    await db.auth().signOut()
+    await db.auth().signOut();
 
-    dispatch(authSignOut())
+    dispatch(authSignOut());
   } catch (err) {
-    console.log('err', err.message)
+    console.log("err", err.message);
   }
-}
+};
 
 export const authStateChangeUser = () => async (dispatch, getState) => {
   try {
@@ -61,12 +61,12 @@ export const authStateChangeUser = () => async (dispatch, getState) => {
           login: user.displayName,
           photo: user.photoURL,
           email: user.email,
-        }
-        dispatch(authStateChange({ stateChange: true }))
-        dispatch(updateUserProfile(userUpdateProfile))
+        };
+        dispatch(authStateChange({ stateChange: true }));
+        dispatch(updateUserProfile(userUpdateProfile));
       }
-    })
+    });
   } catch (err) {
-    console.log('err', err.message)
+    console.log("err", err.message);
   }
-}
+};
